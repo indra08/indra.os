@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FindPix — Indra Maulana</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+    <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif'],mono:['Space Grotesk','monospace']}}}}</script>
+    <style>
+        :root{--bg:#06060c;--text:#e8e8f0}
+        html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+        ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
+        .reveal{opacity:0;transform:translateY(40px);transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1)}.reveal.visible{opacity:1;transform:translateY(0)}.reveal-d1{transition-delay:.1s}.reveal-d2{transition-delay:.2s}.reveal-d3{transition-delay:.3s}
+        .nav-blur{background:rgba(6,6,12,.8);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.06)}
+        .glass-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);backdrop-filter:blur(20px)}
+        .screenshot-card{transition:all .4s cubic-bezier(.22,1,.36,1)}.screenshot-card:hover{transform:translateY(-4px);box-shadow:0 20px 40px -10px rgba(245,158,11,.12)}
+        #particle-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+    </style>
+</head>
+<body>
+    <canvas id="particle-canvas"></canvas>
+
+    <header class="fixed top-0 left-0 right-0 z-50 nav-blur">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+            <a href="index.html" class="font-bold text-xl tracking-tight text-white hover:text-purple-400 transition-colors" style="font-family:'Space Grotesk',sans-serif;">
+                <span class="text-purple-500">&lt;</span>IM<span class="text-purple-500">/&gt;</span>
+            </a>
+            <nav class="flex items-center gap-6">
+                <a href="index.html#projects" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">Work</a>
+                <a href="index.html#skills" class="text-sm font-medium text-gray-400 hover:text-white transition-colors">Skills</a>
+                <a href="index.html#contact" class="text-sm font-medium px-5 py-2.5 bg-purple-600 text-white rounded-full hover:bg-purple-500 transition-all shadow-lg shadow-purple-600/20 text-sm">Get in touch</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="relative min-h-[70vh] flex items-center overflow-hidden pt-24">
+        <div class="absolute inset-0 bg-gradient-to-br from-amber-950/50 via-orange-950/30 to-slate-950"></div>
+        <div class="absolute inset-0" style="background-image:linear-gradient(rgba(245,158,11,0.02)1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,0.02)1px,transparent 1px);background-size:80px 80px;"></div>
+        <div class="absolute bottom-1/4 -left-20 w-[500px] h-[500px] rounded-full bg-amber-600 blur-[100px] opacity-[0.06]"></div>
+
+        <!-- SVG morphing shapes -->
+        <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1200 800" preserveAspectRatio="none">
+            <polygon id="fp-poly-1" fill="rgba(245,158,11,0.04)" points="900,100 1150,350 1050,650 750,550 700,200" />
+            <polygon id="fp-poly-2" fill="rgba(251,191,36,0.03)" points="50,550 350,450 450,750 150,850" />
+            <circle id="fp-circle-1" cx="200" cy="150" r="60" fill="rgba(245,158,11,0.05)" />
+            <circle id="fp-circle-2" cx="1000" cy="600" r="90" fill="rgba(251,191,36,0.04)" />
+        </svg>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-6 py-20 w-full">
+            <div class="max-w-3xl">
+                <a href="index.html#projects" class="inline-flex items-center gap-2 text-gray-500 hover:text-white text-sm mb-8 transition-colors">
+                    <i class="fas fa-arrow-left text-xs"></i> Back to portfolio
+                </a>
+                <div class="reveal">
+                    <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-amber-500/20 bg-amber-500/5 text-amber-300 text-xs tracking-widest uppercase font-mono mb-6">
+                        Event Platform · Tech Lead & Core Backend
+                    </span>
+                </div>
+                <h1 class="reveal reveal-d1 text-5xl sm:text-6xl md:text-7xl font-black text-white tracking-tight mb-4">
+                    Find<span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400">Pix</span>
+                </h1>
+                <p class="reveal reveal-d2 text-xl sm:text-2xl text-gray-400 mb-4 max-w-2xl" style="font-family:'Space Grotesk',sans-serif;">
+                    Face recognition meets event documentation
+                </p>
+                <p class="reveal reveal-d2 text-gray-500 text-lg mb-8 max-w-xl">
+                    Platform dokumentasi event yang menyatukan EO, fotografer, dan peserta. Cari foto berdasarkan wajah atau bib number — kurang dari 2 detik di antara puluhan ribu foto.
+                </p>
+                <div class="reveal reveal-d2 flex flex-wrap gap-3 mb-10">
+                    <span class="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-gray-300">React JS</span>
+                    <span class="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-gray-300">Laravel</span>
+                    <span class="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-gray-300">Golang</span>
+                    <span class="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-gray-300">Python</span>
+                    <span class="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-gray-300">PostgreSQL</span>
+                </div>
+                <a href="https://findpix.id" target="_blank" class="reveal reveal-d2 inline-flex items-center gap-2 px-6 py-3.5 bg-amber-600 text-white font-semibold rounded-xl hover:bg-amber-500 transition-all shadow-xl shadow-amber-600/20">
+                    Visit findpix.id <i class="fas fa-arrow-up-right-from-square text-xs"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Content -->
+    <section class="relative py-20 md:py-28">
+        <div class="max-w-7xl mx-auto px-6">
+
+            <!-- Overview -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-24">
+                <div class="reveal">
+                    <p class="text-sm text-amber-400 tracking-widest uppercase mb-4" style="font-family:'Space Grotesk',sans-serif;">Overview</p>
+                    <h2 class="text-3xl md:text-4xl font-black text-white mb-6">About the project</h2>
+                    <p class="text-gray-400 leading-relaxed mb-6">
+                        <strong class="text-white">FindPix</strong> adalah platform dokumentasi event yang menyatukan tiga pihak: <strong class="text-white">event organizer</strong>, <strong class="text-white">photographer</strong>, dan <strong class="text-white">peserta event</strong>. Peserta dapat mencari dokumentasi foto mereka berdasarkan wajah atau bib number dari event yang telah mereka ikuti.
+                    </p>
+                    <p class="text-gray-400 leading-relaxed">
+                        Platform ini menggabungkan infrastruktur berkinerja tinggi dengan kecepatan aplikasi — mampu menampilkan hasil pencarian wajah dari <strong class="text-white">puluhan ribu foto dalam waktu kurang dari 2 detik</strong>.
+                    </p>
+                </div>
+                <div class="reveal reveal-d1">
+                    <div class="glass-card rounded-2xl p-8">
+                        <h3 class="text-lg font-bold text-white mb-6">My Dual Role</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-start gap-3">
+                                <span class="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fas fa-crown text-amber-400 text-sm"></i></span>
+                                <div>
+                                    <p class="text-white font-semibold text-sm mb-1">Tech Lead</p>
+                                    <p class="text-gray-400 text-sm">Memimpin arsitektur sistem dan koordinasi tim pengembangan</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fas fa-microchip text-orange-400 text-sm"></i></span>
+                                <div>
+                                    <p class="text-white font-semibold text-sm mb-1">Core Backend Engineer</p>
+                                    <p class="text-gray-400 text-sm">Merancang dan membangun pipeline pengelolaan data foto serta sistem pencarian berbasis wajah dan bib number</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Challenge & Solution -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-24">
+                <div class="reveal glass-card rounded-2xl p-8">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="w-10 h-10 rounded-xl bg-rose-500/20 flex items-center justify-center"><i class="fas fa-bullseye text-rose-400"></i></span>
+                        <h3 class="text-xl font-bold text-white">The Challenge</h3>
+                    </div>
+                    <p class="text-gray-400 leading-relaxed">
+                        Membangun platform yang dapat memproses dan mengindeks puluhan ribu foto event, lalu menyediakan pencarian berdasarkan wajah dan bib number dengan <strong class="text-white">latensi di bawah 2 detik</strong>. Ini membutuhkan infrastruktur yang menggabungkan multiple technology stacks — masing-masing untuk tugas spesifik: facial recognition, API serving, data indexing, dan frontend delivery.
+                    </p>
+                </div>
+                <div class="reveal reveal-d1 glass-card rounded-2xl p-8">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center"><i class="fas fa-lightbulb text-emerald-400"></i></span>
+                        <h3 class="text-xl font-bold text-white">The Solution</h3>
+                    </div>
+                    <p class="text-gray-400 leading-relaxed">
+                        Sebagai <strong class="text-white">Core Backend Engineer</strong>, saya merancang pipeline pengelolaan data: <strong class="text-white">Python</strong> untuk facial recognition processing, <strong class="text-white">Golang</strong> untuk high-performance API indexing dan search, <strong class="text-white">Laravel</strong> untuk business logic dan API gateway, <strong class="text-white">PostgreSQL</strong> untuk data persistence, dan <strong class="text-white">React JS</strong> di frontend. Arsitektur ini memungkinkan setiap komponen bekerja optimal pada tugasnya, menghasilkan pencarian wajah dari 50K+ foto dalam di bawah 2 detik.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="mb-24 reveal">
+                <p class="text-sm text-amber-400 tracking-widest uppercase mb-4" style="font-family:'Space Grotesk',sans-serif;">Features</p>
+                <h2 class="text-3xl md:text-4xl font-black text-white mb-10">Key capabilities</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="glass-card rounded-2xl p-6">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center mb-4"><i class="fas fa-face-smile text-amber-400"></i></div>
+                        <h4 class="font-bold text-white mb-2">Face Search</h4>
+                        <p class="text-gray-500 text-sm">Cari foto event berdasarkan wajah. AI-powered facial recognition with sub-2s results.</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-6">
+                        <div class="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center mb-4"><i class="fas fa-tag text-orange-400"></i></div>
+                        <h4 class="font-bold text-white mb-2">Bib Number Search</h4>
+                        <p class="text-gray-500 text-sm">Temukan foto berdasarkan nomor BIB peserta lomba atau event olahraga.</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-6">
+                        <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center mb-4"><i class="fas fa-cloud-upload-alt text-purple-400"></i></div>
+                        <h4 class="font-bold text-white mb-2">Bulk Photo Processing</h4>
+                        <p class="text-gray-500 text-sm">Upload dan proses puluhan ribu foto event secara otomatis dengan indexing pipeline.</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-6">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-4"><i class="fas fa-calendar-check text-emerald-400"></i></div>
+                        <h4 class="font-bold text-white mb-2">Event Management</h4>
+                        <p class="text-gray-500 text-sm">EO dapat membuat event, mengelola album foto, dan memonitor aktivitas peserta.</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-6">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center mb-4"><i class="fas fa-download text-blue-400"></i></div>
+                        <h4 class="font-bold text-white mb-2">Photo Downloads</h4>
+                        <p class="text-gray-500 text-sm">Peserta dapat mengunduh foto berkualitas tinggi langsung dari hasil pencarian.</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-6">
+                        <div class="w-10 h-10 rounded-xl bg-rose-500/20 flex items-center justify-center mb-4"><i class="fas fa-desktop text-rose-400"></i></div>
+                        <h4 class="font-bold text-white mb-2">Admin Panel</h4>
+                        <p class="text-gray-500 text-sm">Dashboard lengkap untuk manajemen event, foto, user, dan reporting analytics.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Architecture highlight -->
+            <div class="reveal mb-24">
+                <p class="text-sm text-amber-400 tracking-widest uppercase mb-4" style="font-family:'Space Grotesk',sans-serif;">Architecture</p>
+                <h2 class="text-3xl md:text-4xl font-black text-white mb-10">Technology stack</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div class="glass-card rounded-2xl p-6 text-center hover:border-blue-500/20 transition-all">
+                        <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mx-auto mb-4"><i class="fab fa-react text-blue-400 text-2xl"></i></div>
+                        <h4 class="font-bold text-white mb-1">React JS</h4>
+                        <p class="text-gray-500 text-xs">Frontend customer-facing web app</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-6 text-center hover:border-rose-500/20 transition-all">
+                        <div class="w-12 h-12 rounded-xl bg-rose-500/10 flex items-center justify-center mx-auto mb-4"><i class="fab fa-laravel text-rose-400 text-2xl"></i></div>
+                        <h4 class="font-bold text-white mb-1">Laravel</h4>
+                        <p class="text-gray-500 text-xs">Business logic & API gateway</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-6 text-center hover:border-cyan-500/20 transition-all">
+                        <div class="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center mx-auto mb-4"><i class="fas fa-bolt text-cyan-400 text-2xl"></i></div>
+                        <h4 class="font-bold text-white mb-1">Golang</h4>
+                        <p class="text-gray-500 text-xs">High-perf API indexing & search</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-6 text-center hover:border-amber-500/20 transition-all">
+                        <div class="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center mx-auto mb-4"><i class="fab fa-python text-amber-400 text-2xl"></i></div>
+                        <h4 class="font-bold text-white mb-1">Python</h4>
+                        <p class="text-gray-500 text-xs">Face recognition processing</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-6 text-center hover:border-indigo-500/20 transition-all">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center mx-auto mb-4"><i class="fas fa-database text-indigo-400 text-2xl"></i></div>
+                        <h4 class="font-bold text-white mb-1">PostgreSQL</h4>
+                        <p class="text-gray-500 text-xs">Reliable data persistence</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screenshots -->
+            <div class="reveal">
+                <p class="text-sm text-amber-400 tracking-widest uppercase mb-4" style="font-family:'Space Grotesk',sans-serif;">Screenshots</p>
+                <h2 class="text-3xl md:text-4xl font-black text-white mb-10">Visual showcase</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="screenshot-card glass-card rounded-2xl overflow-hidden">
+                        <img src="findpix/fe/fe.png" alt="FindPix Homepage" class="w-full h-56 object-cover">
+                        <div class="p-5">
+                            <h4 class="font-bold text-white mb-1">Homepage</h4>
+                            <p class="text-gray-500 text-sm">Landing page utama findpix.id</p>
+                        </div>
+                    </div>
+                    <div class="screenshot-card glass-card rounded-2xl overflow-hidden">
+                        <img src="findpix/fe/event_fe.png" alt="FindPix Event Page" class="w-full h-56 object-cover">
+                        <div class="p-5">
+                            <h4 class="font-bold text-white mb-1">Event Page</h4>
+                            <p class="text-gray-500 text-sm">Halaman event dengan daftar foto dan pencarian</p>
+                        </div>
+                    </div>
+                    <div class="screenshot-card glass-card rounded-2xl overflow-hidden">
+                        <img src="findpix/fe/detail_fe.png" alt="FindPix Photo Detail" class="w-full h-56 object-cover">
+                        <div class="p-5">
+                            <h4 class="font-bold text-white mb-1">Photo Detail</h4>
+                            <p class="text-gray-500 text-sm">Tampilan detail foto hasil pencarian</p>
+                        </div>
+                    </div>
+                    <div class="screenshot-card glass-card rounded-2xl overflow-hidden">
+                        <img src="findpix/panel/panel.png" alt="FindPix Admin Panel" class="w-full h-56 object-cover">
+                        <div class="p-5">
+                            <h4 class="font-bold text-white mb-1">Admin Panel</h4>
+                            <p class="text-gray-500 text-sm">Dashboard manajemen event dan reporting</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="relative py-20 border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-6 text-center reveal">
+            <h2 class="text-3xl md:text-4xl font-black text-white mb-6">Interested in working together?</h2>
+            <p class="text-gray-500 text-lg mb-8">Let's discuss how I can help bring your product vision to life.</p>
+            <a href="index.html#contact" class="inline-flex items-center gap-2 px-8 py-4 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-500 transition-all shadow-xl shadow-purple-600/20">
+                Get in touch <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 py-10">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <a href="index.html" class="font-bold text-xl text-white" style="font-family:'Space Grotesk',sans-serif;"><span class="text-purple-500">&lt;</span>IM<span class="text-purple-500">/&gt;</span></a>
+            <p class="text-gray-600 text-sm">© 2025 Indra Maulana. Built with precision. Designed to inspire.</p>
+        </div>
+    </footer>
+
+    <script>
+    // Particle system
+    (function(){const c=document.getElementById('particle-canvas');const ctx=c.getContext('2d');let p=[];function r(){c.width=window.innerWidth;c.height=window.innerHeight}class P{constructor(){this.reset(true)}reset(i){this.x=Math.random()*c.width;this.y=i?Math.random()*c.height:-10;this.size=Math.random()*2+.5;this.sY=Math.random()*.4+.1;this.sX=(Math.random()-.5)*.2;this.op=Math.random()*.4+.05}update(){this.y+=this.sY;this.x+=this.sX;if(this.y>c.height+10)this.reset(false);if(this.x<0)this.x=c.width;if(this.x>c.width)this.x=0}draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fillStyle=`rgba(245,158,11,${this.op})`;ctx.fill()}}function init(){r();p=[];const n=Math.floor((c.width*c.height)/12000);for(let i=0;i<n;i++)p.push(new P)}function anim(){ctx.clearRect(0,0,c.width,c.height);p.forEach(v=>{v.update();v.draw()});for(let i=0;i<p.length;i++){for(let j=i+1;j<p.length;j++){const dx=p[i].x-p[j].x,dy=p[i].y-p[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<100){ctx.beginPath();ctx.moveTo(p[i].x,p[i].y);ctx.lineTo(p[j].x,p[j].y);ctx.strokeStyle=`rgba(245,158,11,${.03*(1-d/100)})`;ctx.lineWidth=.5;ctx.stroke()}}}requestAnimationFrame(anim)}window.addEventListener('resize',init);init();anim()})();
+
+    // SVG morphing
+    anime({targets:'#fp-poly-1',points:[{value:'900,100 1150,350 1050,650 750,550 700,200'},{value:'850,80 1180,320 1080,620 720,580 680,180'},{value:'920,120 1120,380 1020,680 780,520 720,220'},{value:'900,100 1150,350 1050,650 750,550 700,200'}],easing:'easeInOutQuad',duration:9000,loop:true,direction:'alternate'});
+    anime({targets:'#fp-poly-2',points:[{value:'50,550 350,450 450,750 150,850'},{value:'30,530 370,430 470,770 130,870'},{value:'70,570 330,470 430,730 170,830'},{value:'50,550 350,450 450,750 150,850'}],easing:'easeInOutQuad',duration:11000,loop:true,direction:'alternate'});
+    anime({targets:'#fp-circle-1',translateX:[0,30,-20,10,0],translateY:[0,-25,15,-10,0],scale:[1,1.15,.85,1.05,1],easing:'easeInOutSine',duration:10000,loop:true});
+    anime({targets:'#fp-circle-2',translateX:[0,-40,25,-15,0],translateY:[0,30,-20,15,0],scale:[1,.9,1.2,.95,1],easing:'easeInOutSine',duration:13000,loop:true});
+
+    // Scroll reveal
+    (function(){const o=new IntersectionObserver(e=>{e.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:.15,rootMargin:'0px 0px -40px 0px'});document.querySelectorAll('.reveal').forEach(e=>o.observe(e))})();
+    setTimeout(()=>{document.querySelectorAll('.reveal').forEach(e=>{const r=e.getBoundingClientRect();if(r.top<window.innerHeight&&r.bottom>0)e.classList.add('visible')})},100);
+    </script>
+</body>
+</html>
