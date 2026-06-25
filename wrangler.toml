@@ -1,0 +1,11 @@
+name = "indras-book"
+compatibility_date = "2025-06-25"
+
+# ── Preview (dev) ────────────────────────────────────────
+[env.preview]
+NEXT_PUBLIC_ENV = "preview"
+
+# ── Production ────────────────────────────────────────────
+[env.production]
+name = "indras-book"
+NEXT_PUBLIC_ENV = "production"

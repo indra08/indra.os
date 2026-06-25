@@ -41,43 +41,34 @@ export default function NeuralNav({ activeSection }: NeuralNavProps) {
 
     const items = navRef.current.querySelectorAll(".nav-item");
     const current = items[activeSection] as HTMLElement;
-    const previous = items[prevSection.current] as HTMLElement;
-
-    if (previous) {
-      anime({
-        targets: previous,
-        color: "#666",
-        scale: 1,
-        duration: 300,
-        easing: "easeOutQuad",
-      });
-    }
 
     if (current) {
-      anime({
-        targets: current,
-        color: ["#666", "#00f0ff"],
-        scale: [1, 1.1, 1],
-        duration: 400,
-        easing: "easeOutElastic(1, .6)",
-      });
+      // Only animate scale — color handled by React/Tailwind classes
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      anime({ targets: current, scale: [1, 1.15, 1], duration: 500, easing: "easeOutElastic(1, .5)" } as any);
     }
 
-    // Animate connecting line between nodes
+    // Animate connecting SVG line between nav items
     if (linesRef.current) {
-      const line = linesRef.current.querySelector(".nav-path") as SVGPathElement;
-      if (line) {
-        const startX = 20 + previous.getBoundingClientRect().left;
-        const endX = 20 + current.getBoundingClientRect().left;
-        const startY = 24;
-        const pathData = `M${startX} ${startY} Q${(startX + endX) / 2} 40 ${endX} ${startY}`;
-        line.setAttribute("d", pathData);
-        anime({
-          targets: line,
-          strokeDashoffset: [anime.setDashoffset, 0],
-          duration: 600,
-          easing: "easeInOutQuad",
-        });
+      const prev = items[prevSection.current] as HTMLElement;
+      const cur = items[activeSection] as HTMLElement;
+      if (prev && cur) {
+        const prevRect = prev.getBoundingClientRect();
+        const curRect = cur.getBoundingClientRect();
+        const navRect = linesRef.current.getBoundingClientRect();
+        const x1 = prevRect.left + prevRect.width / 2 - navRect.left;
+        const x2 = curRect.left + curRect.width / 2 - navRect.left;
+        const y = 26;
+        const line = linesRef.current.querySelector(".nav-path") as SVGPathElement;
+        if (line) {
+          line.setAttribute("d", `M${x1} ${y} Q${(x1 + x2) / 2} 42 ${x2} ${y}`);
+          anime({
+            targets: line,
+            strokeDashoffset: [anime.setDashoffset, 0],
+            duration: 600,
+            easing: "easeInOutQuad",
+          });
+        }
       }
     }
 
@@ -98,9 +89,9 @@ export default function NeuralNav({ activeSection }: NeuralNavProps) {
     >
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
-        <div className="font-mono text-neon-cyan text-sm tracking-wider">
+        <div className="font-mono text-sm tracking-wider">
           <span className="text-purple-400">&lt;</span>
-          IM
+          <span className="text-white">IM</span>
           <span className="text-purple-400">/&gt;</span>
         </div>
 
@@ -111,9 +102,9 @@ export default function NeuralNav({ activeSection }: NeuralNavProps) {
               key={item.id}
               data-interactive
               onClick={() => handleNavClick(item.id)}
-              className={`nav-item px-3 py-1.5 font-mono text-xs tracking-wider transition-colors relative group ${
+              className={`nav-item px-3 py-1.5 font-mono text-xs tracking-wider transition-all relative group ${
                 i === activeSection
-                  ? "text-neon-cyan"
+                  ? "text-purple-400"
                   : "text-gray-600 hover:text-gray-400"
               }`}
             >
@@ -121,7 +112,7 @@ export default function NeuralNav({ activeSection }: NeuralNavProps) {
               {item.label}
               {/* Active indicator */}
               {i === activeSection && (
-                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-neon-cyan rounded-full" />
+                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-purple-400 rounded-full" />
               )}
             </button>
           ))}
@@ -130,7 +121,7 @@ export default function NeuralNav({ activeSection }: NeuralNavProps) {
         {/* Mobile hamburger */}
         <button
           data-interactive
-          className="md:hidden font-mono text-neon-cyan text-sm"
+          className="md:hidden font-mono text-purple-400 text-sm"
           onClick={() => {
             const nav = document.getElementById("mobile-nav");
             if (nav) {
@@ -154,7 +145,7 @@ export default function NeuralNav({ activeSection }: NeuralNavProps) {
             data-interactive
             onClick={() => handleNavClick(item.id)}
             className={`nav-item px-3 py-2 font-mono text-xs text-left ${
-              i === activeSection ? "text-neon-cyan" : "text-gray-500"
+              i === activeSection ? "text-purple-400" : "text-gray-500"
             }`}
           >
             <span className="mr-2">{item.icon}</span>
@@ -172,7 +163,7 @@ export default function NeuralNav({ activeSection }: NeuralNavProps) {
           className="nav-path"
           d="M0 24 Q400 40 800 24"
           fill="none"
-          stroke="#00f0ff"
+          stroke="#a78bfa"
           strokeWidth="0.5"
           strokeDasharray="1000"
           strokeDashoffset="1000"

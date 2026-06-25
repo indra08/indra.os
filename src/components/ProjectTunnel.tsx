@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import anime from "animejs";
 
+const CHAR_LIMIT = 250;
+
 interface ProjectImage {
   src: string;
   label: string;
@@ -97,6 +99,30 @@ const PROJECTS: Project[] = [
     ],
     link: "",
   },
+  {
+    title: "Ticket Web (Nexatiket)",
+    subtitle: "Event Management & Ticket Sales",
+    category: "Event Ticketing Platform",
+    description: [
+      "Aplikasi pengelola event dan penjualan tiket yang terintegrasi dengan payment system Xendit. Mendukung end-to-end flow: pembuatan event oleh organizer, pembelian tiket secara online, hingga validasi tiket melalui scan QR code saat hari-H event.",
+      "Sistem scanner dibangun dengan Python yang mampu bekerja secara offline — data tiket disimpan di local storage sehingga validasi tetap berjalan meskipun tidak ada koneksi internet. Sinkronisasi otomatis dilakukan begitu koneksi tersedia kembali.",
+      "Saya berperan sebagai Tech Lead yang memimpin pengembangan dari arsitektur awal hingga delivery. Salah satu implementasi independen adalah integrasi React JS (FE) seperti pada screenshot fe_hos.png yang merupakan frontend kustom untuk salah satu event partner.",
+    ],
+    role: "Tech Lead — Memimpin arsitektur dan pengembangan end-to-end: event management, payment integration (Xendit), QR scanner offline, dan multi-tenant frontend.",
+    tech: ["Laravel", "React JS", "Python", "MySQL", "Xendit"],
+    metrics: [
+      { label: "Stack", value: "5" },
+      { label: "Scanner", value: "Offline" },
+      { label: "Role", value: "Tech Lead" },
+    ],
+    color: "#ef4444",
+    images: [
+      { src: "/nexatiket/fe.png", label: "Landing Page — Nexatiket" },
+      { src: "/nexatiket/fe_hos.png", label: "FE Independen — House of Smith" },
+      { src: "/nexatiket/panel.png", label: "Admin Panel — Management" },
+    ],
+    link: "",
+  },
   // ======== TAMBAH PROJECT BARU DI ATAS LINE INI ========
 ];
 
@@ -105,11 +131,14 @@ export default function ProjectTunnel() {
   const [activeProject, setActiveProject] = useState(0);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [readMore, setReadMore] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Reset selected image when project changes
+  // Reset when project changes
   useEffect(() => {
     setSelectedImage(0);
+    setReadMore(false);
   }, [activeProject]);
 
   // Entrance animation
@@ -123,6 +152,13 @@ export default function ProjectTunnel() {
       delay: anime.stagger(100),
       easing: "easeOutExpo",
     });
+  }, []);
+
+  // Escape key closes lightbox
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setLightboxSrc(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   // Project change animation
@@ -155,6 +191,8 @@ export default function ProjectTunnel() {
   }, [isAutoPlaying]);
 
   const project = PROJECTS[activeProject];
+  const fullText = project.description.join(" ");
+  const needsTruncation = fullText.length > CHAR_LIMIT;
 
   return (
     <div
@@ -214,12 +252,14 @@ export default function ProjectTunnel() {
       <div
         key={project.title}
         className="project-card-active tunnel-enter w-full max-w-6xl rounded-lg border border-void-border bg-void-surface/80 backdrop-blur-sm p-6 md:p-10"
+        onMouseEnter={() => setIsAutoPlaying(false)}
+        onMouseLeave={() => setIsAutoPlaying(true)}
       >
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* LEFT: Info */}
-          <div className="flex-1 lg:max-w-[45%]">
+        <div className="flex flex-col lg:flex-row gap-8 lg:h-[460px]">
+          {/* LEFT: Info - scrollable if overflow */}
+          <div className="flex-1 lg:max-w-[45%] flex flex-col min-h-0">
             {/* Badge */}
-            <div className="flex flex-wrap items-center gap-3 mb-3">
+            <div className="flex flex-wrap items-center gap-3 mb-3 flex-shrink-0">
               <span
                 className="font-mono text-xs px-3 py-1 rounded-full border"
                 style={{
@@ -233,68 +273,110 @@ export default function ProjectTunnel() {
               <span className="font-mono text-xs text-gray-600">{project.subtitle}</span>
             </div>
 
-            <h3 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            <h3 className="text-3xl md:text-4xl font-bold text-white mb-3 flex-shrink-0">
               {project.title}
             </h3>
 
-            {/* Description paragraphs */}
-            <div className="text-gray-400 leading-relaxed mb-5 space-y-3">
-              {project.description.map((p, i) => (
-                <p key={i}>{p}</p>
-              ))}
-            </div>
+            {/* Scrollable content area */}
+            <div className="flex-1 overflow-y-auto pr-2 min-h-0 custom-scrollbar space-y-3">
+              {/* Description */}
+              <div className="text-gray-400 leading-relaxed text-sm">
+                {needsTruncation && !readMore ? (
+                  <>
+                    <p>{fullText.slice(0, CHAR_LIMIT)}…</p>
+                    <button
+                      data-interactive
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setReadMore(true);
+                      }}
+                      className="inline-flex items-center gap-1 mt-1 font-mono text-xs transition-colors"
+                      style={{ color: project.color }}
+                    >
+                      [ READ MORE ]
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {project.description.map((p, i) => (
+                      <p key={i} className={i > 0 ? "mt-2" : ""}>{p}</p>
+                    ))}
+                    {needsTruncation && (
+                      <button
+                        data-interactive
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setReadMore(false);
+                        }}
+                        className="inline-flex items-center gap-1 mt-1 font-mono text-xs transition-colors"
+                        style={{ color: project.color }}
+                      >
+                        [ SHOW LESS ]
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
 
-            {/* Role highlight */}
-            <div
-              className="p-4 rounded-lg mb-5 font-mono text-sm leading-relaxed"
-              style={{
-                backgroundColor: `${project.color}0d`,
-                borderLeft: `2px solid ${project.color}`,
-                color: "#c0c0c0",
-              }}
-            >
-              <span style={{ color: project.color }}>[ROLE]</span>{" "}
-              {project.role}
-            </div>
-
-            {/* Tech tags */}
-            <div className="flex flex-wrap gap-2 mb-6">
-              {project.tech.map((t) => (
-                <span
-                  key={t}
-                  className="px-3 py-1 text-xs font-mono rounded border border-void-border text-gray-400 bg-void-deep/50"
-                >
-                  {t}
-                </span>
-              ))}
-            </div>
-
-            {project.link && (
-              <a
-                href={project.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                data-interactive
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-mono text-sm transition-all duration-300 hover:bg-white/5"
+              {/* Role highlight */}
+              <div
+                className="p-3 rounded-lg font-mono text-sm leading-relaxed"
                 style={{
-                  color: project.color,
-                  border: `1px solid ${project.color}33`,
+                  backgroundColor: `${project.color}0d`,
+                  borderLeft: `2px solid ${project.color}`,
+                  color: "#c0c0c0",
                 }}
               >
-                Visit live site &rarr;
-              </a>
+                <span style={{ color: project.color }}>[ROLE]</span>{" "}
+                {project.role}
+              </div>
+
+              {/* Tech tags */}
+              <div className="flex flex-wrap gap-2">
+                {project.tech.map((t) => (
+                  <span
+                    key={t}
+                    className="px-3 py-1 text-xs font-mono rounded border border-void-border text-gray-400 bg-void-deep/50"
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Link button - fixed at bottom */}
+            {project.link && (
+              <div className="flex-shrink-0 mt-3 pt-3 border-t border-void-border">
+                <a
+                  href={project.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-interactive
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-mono text-sm transition-all duration-300 hover:bg-white/5"
+                  style={{
+                    color: project.color,
+                    border: `1px solid ${project.color}33`,
+                  }}
+                >
+                  Visit live site &rarr;
+                </a>
+              </div>
             )}
           </div>
 
           {/* RIGHT: Screenshots gallery + Metrics */}
-          <div className="flex-1 lg:max-w-[55%] flex flex-col gap-4">
+          <div className="flex-1 lg:max-w-[55%] flex flex-col gap-4 justify-between">
             {/* Main screenshot */}
-            <div className="relative">
-              <div className="rounded-lg overflow-hidden border border-void-border bg-void-deep">
+            <div className="relative flex-1 flex flex-col">
+              <div
+                className="rounded-lg overflow-hidden border border-void-border bg-void-deep flex-1 cursor-zoom-in group/img"
+                onClick={() => setLightboxSrc(project.images[selectedImage]?.src)}
+                data-interactive
+              >
                 <img
                   src={project.images[selectedImage]?.src}
                   alt={project.images[selectedImage]?.label}
-                  className="w-full h-56 md:h-72 object-cover transition-opacity duration-300"
+                  className="w-full h-full object-cover transition-all duration-300 group-hover/img:scale-105"
                   loading="lazy"
                 />
               </div>
@@ -327,7 +409,7 @@ export default function ProjectTunnel() {
             </div>
 
             {/* Metrics */}
-            <div className="flex gap-4 justify-around mt-2">
+            <div className="flex gap-4 justify-around">
               {project.metrics.map((m) => (
                 <div key={m.label} className="flex items-center gap-2">
                   <svg width="44" height="44" viewBox="0 0 44 44">
@@ -380,6 +462,28 @@ export default function ProjectTunnel() {
           />
         </div>
       </div>
+
+      {/* Lightbox overlay */}
+      {lightboxSrc && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 md:p-10"
+          onClick={() => setLightboxSrc(null)}
+        >
+          <button
+            data-interactive
+            onClick={() => setLightboxSrc(null)}
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 border border-white/20 text-white text-lg hover:bg-white/20 transition-all z-10"
+          >
+            ✕
+          </button>
+          <img
+            src={lightboxSrc}
+            alt="Preview"
+            className="max-w-full max-h-[90vh] rounded-lg object-contain shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }
