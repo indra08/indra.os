@@ -6,6 +6,7 @@ import NeuralNav from "@/components/NeuralNav";
 import SkillGalaxy from "@/components/SkillGalaxy";
 import DataFlow from "@/components/DataFlow";
 import ProjectTunnel from "@/components/ProjectTunnel";
+import DevOpsDashboard from "@/components/DevOpsDashboard";
 import CommandCenter from "@/components/CommandCenter";
 import ContactPortal from "@/components/ContactPortal";
 import CursorEffect from "@/components/CursorEffect";
@@ -21,6 +22,7 @@ export default function Home() {
     "skill-galaxy",
     "data-flow",
     "project-tunnel",
+    "devops-dashboard",
     "command-center",
     "contact-portal",
   ];
@@ -145,6 +147,14 @@ export default function Home() {
 
         <section
           ref={setSectionRef(4)}
+          id="devops-dashboard"
+          className="min-h-screen relative overflow-hidden"
+        >
+          <DevOpsDashboard />
+        </section>
+
+        <section
+          ref={setSectionRef(5)}
           id="command-center"
           className="min-h-screen relative overflow-hidden"
         >
@@ -152,7 +162,7 @@ export default function Home() {
         </section>
 
         <section
-          ref={setSectionRef(5)}
+          ref={setSectionRef(6)}
           id="contact-portal"
           className="min-h-screen relative overflow-hidden"
         >

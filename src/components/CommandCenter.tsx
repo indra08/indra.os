@@ -11,14 +11,10 @@ const COMMANDS: Record<string, { output: string | string[]; color?: string }> = 
     output: [
       "AVAILABLE COMMANDS:",
       "  about        - Display architect profile",
-      "  skills       - List technical competencies",
-      "  projects     - View project portfolio",
-      "  services     - What I deliver",
-      "  contact      - Show contact channels",
-      "  system       - System diagnostics",
       "  whois <ip>   - WHOIS lookup on IP/domain",
-      "  sqlinject <u>- Simulate SQL injection attack",
+      "  inject <url> - Simulate injection attacks (SQL, XSS, CMD, etc.)",
       "  myip         - Show your public IP & geolocation",
+      "  scan <url>   - OWASP Top 10 security scan (new tab)",
       "  clear        - Clear terminal",
       "  help         - Show this message",
     ],
@@ -42,86 +38,6 @@ const COMMANDS: Record<string, { output: string | string[]; color?: string }> = 
       "analysis and architecture design to quality",
       "delivery. Agile practitioner. DevOps enthusiast.",
       "Full-stack builder.",
-    ],
-    color: "#7c5cfc",
-  },
-  skills: {
-    output: [
-      "TECHNICAL ARSENAL:",
-      "─────────────────────────",
-      "Frontend:  React, Next.js, Vue.js, TypeScript",
-      "Backend:   Laravel, Node.js, Golang, Python",
-      "Mobile:    Flutter, React Native, Swift, Kotlin",
-      "Database:  MySQL, PostgreSQL, Redis",
-      "DevOps:    Docker, AWS, CI/CD",
-      "Process:   Agile, Scrum, Team Leadership",
-      "",
-      "Technology decisions that compound.",
-      "Tools I trust to ship.",
-    ],
-    color: "#6366f1",
-  },
-  projects: {
-    output: [
-      "[1] ForYou by SML",
-      "    Loyalty Platform - SinarmasLand",
-      "    Tech: React JS, Flutter, Laravel, MySQL, Redis",
-      "    4 platforms: Mobile (iOS+Android), Web, Admin Panel",
-      "    Live: foryoubysml.com",
-      "",
-      "[2] FindPix",
-      "    Event Platform - Face Recognition + Bib Search",
-      "    Tech: React JS, Laravel, Golang, Python, PostgreSQL",
-      "    Sub-2s face search from 50K+ photos",
-      "    Live: findpix.id",
-      "",
-      "[3] Ticket Web (Nexatiket)",
-      "    Event Ticketing - Management + Scan",
-      "    Tech: Laravel, React JS, Python, MySQL, Xendit",
-      "    Offline QR Scanner + Payment Integration",
-    ],
-    color: "#f59e0b",
-  },
-  services: {
-    output: [
-      "WHAT I DELIVER:",
-      "─────────────────────────",
-      "Tech Architecture  - System design, tech selection",
-      "Team Leadership    - Agile sprints, cross-team coord",
-      "Product Delivery   - Requirements to production",
-      "DevOps & CI/CD     - Docker, AWS, pipelines",
-      "Mobile Development - Flutter, React Native",
-      "Consulting         - Audits, reviews, strategy",
-    ],
-    color: "#38bdf8",
-  },
-  contact: {
-    output: [
-      "COMM CHANNELS:",
-      "──────────────",
-      "Email:    indra.maulana08@gmail.com",
-      "GitHub:   github.com/indra08",
-      "LinkedIn: linkedin.com/in/indra-maulana-husni-mubarok-565429105",
-      "IG:       instagram.com/maulanaindra.mubarok",
-      "Phone:    +62 856 268 1814",
-      "Location: Semarang, Central Java, Indonesia",
-      "──────────┴───",
-      "Available for opportunities",
-    ],
-    color: "#10b981",
-  },
-  system: {
-    output: [
-      "SYSTEM DIAGNOSTICS:",
-      "──────────────────",
-      "Kernel:    IndraOS v10.0",
-      "Uptime:    10+ years in production",
-      "Products:  100+ shipped",
-      "Clients:   50+ satisfied",
-      "Stack:     Full-stack polyglot",
-      "Status:    Available for opportunities",
-      "──────────────────",
-      "All systems nominal. Ready to build.",
     ],
     color: "#7c5cfc",
   },
@@ -167,100 +83,150 @@ function simulateWhois(target: string): HistoryItem[] {
   ];
 }
 
-// ─── SQL Injection simulator ──────────────────────────────
-function simulateSQLInjection(target: string): Promise<HistoryItem[]> {
-  return new Promise((resolve) => {
-    const S = (lines: (string | [string, string])[]): HistoryItem[] =>
-      lines.map((l) => (Array.isArray(l) ? O(l[0], l[1]) : O(l)));
+// ─── Multi-Injection Simulator ────────────────────────────
+// Simulates: SQLi, XSS (Reflected/Stored/DOM), Command Injection,
+//            LDAP Injection, NoSQL Injection, SSTI, XXE, Path Traversal
 
-    const steps: HistoryItem[][] = [
-      S([
-        `[*] Target: ${target}`,
-        "[*] Phase 1/5 — Reconnaissance…",
-        "",
-        "[~] Probing: GET /product?id=1",
-        "    Status: 200 OK | Server: Apache/2.4.41",
-        "[~] Probing: GET /product?id=1'",
-        ["    Status: 500 | MySQL Error detected!", "#ff4444"],
-        ["    Error: You have an error in your SQL syntax…", "#ff4444"],
-        "",
-        ["[+] Vulnerable to SQL Injection (error-based)", "#f59e0b"],
-      ]),
-      S([
-        "[*] Phase 2/5 — Enumerating columns…",
-        "",
-        "[~] ORDER BY 1 — 200 OK",
-        "[~] ORDER BY 5 — 200 OK",
-        "[~] ORDER BY 8 — 200 OK",
-        "[~] ORDER BY 12 — 200 OK",
-        ["[~] ORDER BY 15 — 500 Error", "#ff4444"],
-        "",
-        ["[+] Column count: 14", "#f59e0b"],
-      ]),
-      S([
-        "[*] Phase 3/5 — Enumerating database…",
-        "",
-        "[~] UNION SELECT @@version,2,3,4,5,6,7,8,9,10,11,12,13,14",
-        "    MySQL 8.0.35 | InnoDB",
-        "[~] UNION SELECT table_name,2,3,4,5,6,7,8,9,10,11,12,13,14",
-        "    FROM information_schema.tables WHERE table_schema=DATABASE()",
-        "",
-        ["    [+] users", "#10b981"],
-        ["    [+] products", "#10b981"],
-        ["    [+] orders", "#10b981"],
-        ["    [+] sessions", "#10b981"],
-        ["    [+] payments", "#10b981"],
-        "",
-        ["[+] Found 5 tables in current database", "#f59e0b"],
-      ]),
-      S([
-        "[*] Phase 4/5 — Extracting 'users' schema…",
-        "",
-        "[~] UNION SELECT column_name,2,3,4,5,6,7,8,9,10,11,12,13,14",
-        "    FROM information_schema.columns WHERE table_name='users'",
-        "",
-        ["    [+] id           int(11)    AUTO_INCREMENT", "#10b981"],
-        ["    [+] username     varchar(64)", "#10b981"],
-        ["    [+] email        varchar(128)", "#10b981"],
-        ["    [+] password     varchar(255)", "#ff4444"],
-        ["    [+] role         enum('admin','user')", "#10b981"],
-        ["    [+] created_at   datetime", "#10b981"],
-        ["    [+] last_login   datetime", "#10b981"],
-        "",
-        ["[+] 7 columns in 'users' table", "#f59e0b"],
-      ]),
-      S([
-        ["[*] Phase 5/5 — Dumping credentials…", "#f59e0b"],
-        "",
-        "[~] UNION SELECT CONCAT(username,':',email,':',password,':',role)",
-        "    FROM users LIMIT 5",
-        "",
-      ]).concat([
-        O("┌──────┬──────────────────────────────┬────────────────────────┬─────────┐", "#666"),
-        O("│  id  │  email                       │  username              │  role    │", "#666"),
-        O("├──────┼──────────────────────────────┼────────────────────────┼─────────┤", "#666"),
-        O("│  1   │  admin@corp.com              │  admin                 │  admin   │", "#ff4444"),
-        O("│  2   │  j.smith@corp.com            │  jsmith                │  user    │"),
-        O("│  3   │  m.jones@corp.com            │  mjones                │  user    │"),
-        O("│  4   │  a.williams@corp.com         │  awilliams             │  user    │"),
-        O("│  5   │  d.brown@corp.com            │  dbrown                │  user    │"),
-        O("└──────┴──────────────────────────────┴────────────────────────┴─────────┘", "#666"),
-        O(""),
-        O(""),
-        O("  ╔══════════════════════════════════════════════╗", "#10b981"),
-        O("  ║  [+] DATABASE ACCESS OBTAINED                ║", "#10b981"),
-        O("  ║  [+] Admin credentials: admin / ***          ║", "#10b981"),
-        O("  ║  [+] 5 user records extracted                ║", "#10b981"),
-        O("  ╚══════════════════════════════════════════════╝", "#10b981"),
-        O(""),
-        O("[!] Simulation complete. Vulnerability: unsanitized user input", "#f59e0b"),
-        O("[!] in GET parameter 'id'. Patch: use prepared statements.", "#f59e0b"),
-      ]),
+type InjectType = {
+  name: string;
+  payload: string;
+  endpoint: string;
+  severity: string;
+  owasp: string;
+};
+
+const INJECT_TYPES: InjectType[] = [
+  { name: "SQL Injection (Error-based)", payload: "' OR '1'='1", endpoint: "/login", severity: "Critical", owasp: "A03:2021 – Injection" },
+  { name: "SQL Injection (UNION-based)", payload: "' UNION SELECT null,null,null--", endpoint: "/product?id=", severity: "Critical", owasp: "A03:2021 – Injection" },
+  { name: "SQL Injection (Blind/Boolean)", payload: "' AND 1=1--", endpoint: "/user?id=", severity: "Critical", owasp: "A03:2021 – Injection" },
+  { name: "SQL Injection (Time-based)", payload: "'; WAITFOR DELAY '00:00:05'--", endpoint: "/search?q=", severity: "Critical", owasp: "A03:2021 – Injection" },
+  { name: "Reflected XSS", payload: "<script>alert(1)</script>", endpoint: "/search?q=", severity: "High", owasp: "A03:2021 – Injection" },
+  { name: "Stored XSS", payload: "<img src=x onerror=alert(1)>", endpoint: "/comment", severity: "High", owasp: "A03:2021 – Injection" },
+  { name: "DOM-based XSS", payload: "#<img src=x onerror=alert(1)>", endpoint: "/#", severity: "High", owasp: "A03:2021 – Injection" },
+  { name: "Command Injection", payload: "; ls -la", endpoint: "/ping?host=", severity: "Critical", owasp: "A03:2021 – Injection" },
+  { name: "Command Injection (Chained)", payload: "| cat /etc/passwd", endpoint: "/exec?cmd=", severity: "Critical", owasp: "A03:2021 – Injection" },
+  { name: "LDAP Injection", payload: "*)(uid=*))(|(uid=*", endpoint: "/login?user=", severity: "High", owasp: "A03:2021 – Injection" },
+  { name: "NoSQL Injection (MongoDB)", payload: '{"$gt": ""}', endpoint: "/api/user?id=", severity: "High", owasp: "A03:2021 – Injection" },
+  { name: "NoSQL Injection ($where)", payload: '{"$where": "1==1"}', endpoint: "/api/search", severity: "High", owasp: "A03:2021 – Injection" },
+  { name: "Server-Side Template Injection", payload: "{{7*7}}", endpoint: "/profile?name=", severity: "High", owasp: "A03:2021 – Injection" },
+  { name: "SSTI (Jinja2/Python)", payload: "{{config.__class__.__init__.__globals__}}", endpoint: "/render?template=", severity: "Critical", owasp: "A03:2021 – Injection" },
+  { name: "XXE (External Entity)", payload: "<!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]>", endpoint: "/api/xml", severity: "Critical", owasp: "A03:2021 – Injection" },
+  { name: "Path Traversal (Basic)", payload: "../../../../etc/passwd", endpoint: "/download?file=", severity: "High", owasp: "A01:2021 – Broken Access Control" },
+  { name: "Path Traversal (Encoded)", payload: "..%2f..%2f..%2fetc%2fpasswd", endpoint: "/view?path=", severity: "High", owasp: "A01:2021 – Broken Access Control" },
+  { name: "CRLF Injection", payload: "%0d%0aSet-Cookie: hacked=1", endpoint: "/redirect?url=", severity: "Medium", owasp: "A03:2021 – Injection" },
+  { name: "HTTP Parameter Pollution", payload: "&admin=true&admin=true", endpoint: "/user?role=user", severity: "Low", owasp: "A04:2021 – Insecure Design" },
+  { name: "Host Header Injection", payload: "evil.com", endpoint: "Host: ", severity: "Medium", owasp: "A05:2021 – Security Misconfiguration" },
+];
+
+function simulateInject(target: string): Promise<HistoryItem[]> {
+  return new Promise((resolve) => {
+    const steps: HistoryItem[][] = [];
+
+    // Phase 1: Scan setup
+    steps.push([
+      O("╔══════════════════════════════════════╗", "#f59e0b"),
+      O("║  INJECTION SCANNER — Multi-Vector    ║", "#f59e0b"),
+      O("╚══════════════════════════════════════╝", "#f59e0b"),
+      O(""),
+      O(`[*] Target: ${target}`, "#f59e0b"),
+      O(`[*] Vectors loaded: ${INJECT_TYPES.length}`, "#888"),
+      O("[!] Simulation only. No actual exploit performed.", "#666"),
+      O(""),
+    ]);
+
+    // Phase 2-7: Group injections by category
+    const categories = [
+      { label: "Phase 1/6 — SQL Injection Vectors", types: INJECT_TYPES.filter((t) => t.name.startsWith("SQL")) },
+      { label: "Phase 2/6 — Cross-Site Scripting (XSS)", types: INJECT_TYPES.filter((t) => t.name.includes("XSS")) },
+      { label: "Phase 3/6 — Command & OS Injection", types: INJECT_TYPES.filter((t) => t.name.includes("Command")) },
+      { label: "Phase 4/6 — LDAP, NoSQL & Template Injection", types: INJECT_TYPES.filter((t) => t.name.includes("LDAP") || t.name.includes("NoSQL") || t.name.includes("Template") || t.name.includes("SSTI")) },
+      { label: "Phase 5/6 — XXE, Path Traversal & CRLF", types: INJECT_TYPES.filter((t) => t.name.includes("XXE") || t.name.includes("Path") || t.name.includes("CRLF")) },
+      { label: "Phase 6/6 — HTTP Header & Parameter Attacks", types: INJECT_TYPES.filter((t) => t.name.includes("Header") || t.name.includes("Parameter")) },
     ];
+
+    let findings = 0;
+    let criticals = 0;
+    let highs = 0;
+
+    categories.forEach((cat) => {
+      const lines: HistoryItem[] = [];
+      lines.push(O(`[~] ${cat.label}`, "#f59e0b"));
+      lines.push(O(""));
+
+      cat.types.forEach((t) => {
+        const vulnerable = Math.random() > 0.45; // ~55% chance per vector
+        const status = vulnerable ? "VULNERABLE" : "OK";
+        const color = vulnerable ? (t.severity === "Critical" ? "#ef4444" : "#f59e0b") : "#10b981";
+        lines.push(O(`  [~] ${t.payload}`, "#888"));
+        lines.push(O(`      ${t.endpoint} → ${status}  [${t.severity}]`, color));
+
+        if (vulnerable) {
+          findings++;
+          if (t.severity === "Critical") criticals++;
+          if (t.severity === "High") highs++;
+
+          const evidence = t.name.includes("SQL") ? "MySQL error: 'You have an error in your SQL syntax...'" :
+            t.name.includes("XSS") ? "Payload reflected in HTML without encoding" :
+            t.name.includes("Command") ? "Output: bin  boot  dev  etc  home  lib" :
+            t.name.includes("LDAP") ? "LDAP filter bypassed — all users returned" :
+            t.name.includes("NoSQL") ? "NoSQL operator executed — all documents returned" :
+            t.name.includes("Template") || t.name.includes("SSTI") ? "Template expression evaluated: 49" :
+            t.name.includes("XXE") ? "External entity resolved — /etc/passwd contents leaked" :
+            t.name.includes("Path") ? "File contents returned: root:x:0:0:root:" :
+            t.name.includes("CRLF") ? "Header injected — Set-Cookie reflected" :
+            t.name.includes("Header") ? "Host header accepted without validation" :
+            "Parameter pollution accepted — logic bypassed";
+
+          lines.push(O(`      → Evidence: ${evidence}`, "#888"));
+        }
+      });
+
+      lines.push(O(""));
+      steps.push(lines);
+    });
+
+    // Final summary
+    const totalChecks = INJECT_TYPES.length;
+    const score = Math.max(0, Math.round(100 - (criticals * 18 + highs * 12 + (findings - criticals - highs) * 5)));
+    const grade = score >= 90 ? "A" : score >= 75 ? "B" : score >= 60 ? "C" : score >= 40 ? "D" : "F";
+
+    steps.push([
+      O(""),
+      O("╔══════════════════════════════════════╗", "#f59e0b"),
+      O("║  INJECTION SCAN COMPLETE             ║", "#f59e0b"),
+      O("╚══════════════════════════════════════╝", "#f59e0b"),
+      O(""),
+      O("─── Summary ───", "#7c5cfc"),
+      O(""),
+      O(`  Vectors tested:  ${totalChecks}`, "#888"),
+      O(`  Vulnerabilities: ${findings} found`, findings > 0 ? "#ef4444" : "#10b981"),
+      O(`    Critical: ${criticals}  |  High: ${highs}`, "#888"),
+      O(`  Injection Score: ${score}/100  (Grade: ${grade})`, score >= 75 ? "#10b981" : "#f59e0b"),
+      O(""),
+      O("─── OWASP Mapping ───", "#7c5cfc"),
+      O("  A03:2021 – Injection (SQL, XSS, CMD, LDAP, SSTI, CRLF)", "#888"),
+      O("  A01:2021 – Broken Access Control (Path Traversal)", "#888"),
+      O("  A04:2021 – Insecure Design (Param Pollution)", "#888"),
+      O("  A05:2021 – Security Misconfiguration (Host Header)", "#888"),
+      O(""),
+      O("─── Top Mitigations ───", "#7c5cfc"),
+      O("  1. Parameterized queries for ALL database access", "#38bdf8"),
+      O("  2. Output encoding (HTML, JS, URL contexts)", "#38bdf8"),
+      O("  3. Input validation + whitelist approach", "#38bdf8"),
+      O("  4. Disable external entities in XML parsers", "#38bdf8"),
+      O("  5. Restrict file system access (chroot/sandbox)", "#38bdf8"),
+      O("  6. Disable template expression evaluation on user input", "#38bdf8"),
+      O("  7. Validate and sanitize HTTP headers", "#38bdf8"),
+      O(""),
+      O("[!] Simulation complete. For real testing, use:", "#f59e0b"),
+      O("    sqlmap | xsstrike | commix | burp suite | nuclei", "#666"),
+      O(""),
+      O("────────────────────────────────────────", "#666"),
+    ]);
 
     let delay = 0;
     steps.forEach((step, i) => {
-      delay += [800, 900, 1000, 1100, 1200][i];
+      delay += [300, 600, 600, 600, 700, 600, 500, 800][i] || 600;
       setTimeout(() => resolve(step), delay);
     });
   });
@@ -333,6 +299,27 @@ export default function CommandCenter() {
         return;
       }
 
+      if (lower.startsWith("scan ")) {
+        const target = trimmed.slice(5).trim();
+        if (!target) return addHistory([O("Usage: scan <url>  —  e.g. scan https://example.com", "#ff4444")]);
+        addHistory([
+          O(""),
+          O("╔══════════════════════════════════════╗", "#f59e0b"),
+          O("║  WEBSITE SECURITY SCANNER            ║", "#f59e0b"),
+          O("║  OWASP Top 10 (2021) — Safe Scan     ║", "#f59e0b"),
+          O("╚══════════════════════════════════════╝", "#f59e0b"),
+          O(""),
+          O(`[*] Target: ${target}`, "#f59e0b"),
+          O("[!] Opening professional vulnerability report in new tab…", "#38bdf8"),
+          O("[!] All checks are read-only and safe.", "#666"),
+          O(""),
+        ]);
+        // Open scan report in a new tab
+        const reportUrl = `/scan-report?url=${encodeURIComponent(target)}`;
+        window.open(reportUrl, "_blank");
+        return;
+      }
+
       if (lower.startsWith("whois ")) {
         const target = trimmed.slice(6).trim();
         if (!target) return addHistory([O("Usage: whois <domain|ip>", "#ff4444")]);
@@ -345,16 +332,11 @@ export default function CommandCenter() {
         return;
       }
 
-      if (lower.startsWith("sqlinject ")) {
-        const target = trimmed.slice(10).trim();
-        if (!target) return addHistory([O("Usage: sqlinject <target_url>", "#ff4444")]);
+      if (lower.startsWith("inject ")) {
+        const target = trimmed.slice(7).trim();
+        if (!target) return addHistory([O("Usage: inject <url>  —  e.g. inject https://example.com", "#ff4444")]);
         setIsBusy(true);
-        addHistory([
-          O(`[*] Starting SQL injection simulation on ${target}`, "#f59e0b"),
-          O("[!] This is a simulation. No actual attack is performed.", "#666"),
-          O(""),
-        ]);
-        simulateSQLInjection(target).then((result) => {
+        simulateInject(target).then((result: HistoryItem[]) => {
           addHistory(result);
           setIsBusy(false);
         });
@@ -461,8 +443,8 @@ export default function CommandCenter() {
       </div>
 
       <p className="mt-4 text-xs font-mono text-gray-600 terminal-container text-center leading-relaxed">
-        Try: help | about | skills | projects | services | contact | system<br />
-        myip | whois example.com | sqlinject https://target.com/login
+        Try: help | about | whois example.com | myip |<br />
+        inject https://example.com | scan https://example.com
       </p>
     </div>
   );

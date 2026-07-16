@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { id: "skill-galaxy", label: "SKILLS", icon: "◆" },
   { id: "data-flow", label: "EXPERIENCE", icon: "▶" },
   { id: "project-tunnel", label: "PROJECTS", icon: "◉" },
+  { id: "devops-dashboard", label: "DEVOPS", icon: "◈" },
   { id: "command-center", label: "TERMINAL", icon: "▣" },
   { id: "contact-portal", label: "CONTACT", icon: "◉" },
 ];
