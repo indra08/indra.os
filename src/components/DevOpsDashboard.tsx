@@ -3,100 +3,89 @@
 import { useEffect, useRef, useState } from "react";
 import anime from "animejs";
 
-/* ─── Pipeline Stages ─────────────────────────────────── */
+/* ─── Static Data ─────────────────────────────────────── */
+
 const PIPELINE_STAGES = [
-  { label: "GIT PUSH", icon: "⬆", color: "#f97316" },
-  { label: "BUILD", icon: "⚙", color: "#f59e0b" },
-  { label: "TEST", icon: "✓", color: "#38bdf8" },
-  { label: "SECURITY SCAN", icon: "🛡", color: "#ef4444" },
-  { label: "DEPLOY", icon: "☁", color: "#10b981" },
-  { label: "MONITOR", icon: "◉", color: "#7c5cfc" },
+  { label: "GIT PUSH", color: "#f97316" },
+  { label: "BUILD", color: "#f59e0b" },
+  { label: "TEST", color: "#38bdf8" },
+  { label: "SECURITY SCAN", color: "#ef4444" },
+  { label: "DEPLOY", color: "#10b981" },
+  { label: "MONITOR", color: "#7c5cfc" },
 ];
 
-/* ─── SRE Metrics ──────────────────────────────────────── */
 const SRE_METRICS = [
   { label: "MTTR", value: 12, unit: "min", max: 60, desc: "Mean Time to Recovery", color: "#10b981" },
   { label: "Deploy Freq", value: 18, unit: "/week", max: 30, desc: "Deployment Frequency", color: "#38bdf8" },
   { label: "Change Fail", value: 4, unit: "%", max: 15, desc: "Change Failure Rate", color: "#f97316" },
 ];
 
-/* ─── Infrastructure Nodes ─────────────────────────────── */
+const DEPLOY_LOG_RAW = [
+  "9:41:02  [INFO]   git push origin main → commit a3f8c2d",
+  "9:41:04  [BUILD]  docker build -t app:latest .",
+  "9:41:18  [BUILD]  ✓ Image built successfully (14.2s)",
+  "9:41:19  [TEST]   Running 247 tests...",
+  "9:41:27  [TEST]   ✓ 247 passed | 0 failed | 0 skipped",
+  "9:41:28  [SCAN]   npm audit — 0 vulnerabilities",
+  "9:41:29  [SCAN]   ✓ Security scan passed",
+  "9:41:30  [DEPLOY] docker push registry.example.com/app:latest",
+  "9:41:35  [DEPLOY] kubectl apply -f deployment.yaml",
+  "9:41:38  [DEPLOY] ✓ Deployed to production (namespace: prod)",
+  "9:41:39  [HEALTH] GET /health → 200 OK",
+  "9:41:40  [INFO]   ▲ All systems operational | Uptime: 99.97%",
+];
+
 const INFRA_NODES = [
-  { id: "cloudflare", label: "Cloudflare", x: 50, y: 6, icon: "🌐", desc: "CDN · DDoS Protection · SSL Termination" },
-  { id: "nginx", label: "Nginx", x: 50, y: 19, icon: "⚡", desc: "Reverse Proxy · Load Balancer · Rate Limiting" },
-  { id: "docker", label: "Docker", x: 15, y: 34, icon: "📦", desc: "Container Orchestration · Docker Compose" },
-  { id: "laravel", label: "Laravel", x: 50, y: 36, icon: "🔷", desc: "API Backend · Business Logic · Auth" },
-  { id: "nodejs", label: "Node.js", x: 85, y: 34, icon: "💚", desc: "Real-time · WebSocket · Messaging" },
-  { id: "mysql", label: "MySQL", x: 22, y: 52, icon: "🐬", desc: "Transactional Data · Orders · Users" },
-  { id: "redis", label: "Redis", x: 50, y: 50, icon: "♦", desc: "Cache · Queue · Session Store" },
-  { id: "mongo", label: "MongoDB", x: 78, y: 52, icon: "🍃", desc: "Message Store · Event Log · Analytics" },
-  { id: "aws", label: "AWS", x: 50, y: 66, icon: "☁", desc: "S3 · EC2 · RDS · CloudWatch" },
+  { id: "cf", label: "Cloudflare", x: 400, y: 35, desc: "CDN · WAF · SSL Termination" },
+  { id: "nx", label: "Nginx", x: 400, y: 115, desc: "Reverse Proxy · Load Balancer · Rate Limiting" },
+  { id: "dk", label: "Docker", x: 120, y: 210, desc: "Container Orchestration · Docker Compose" },
+  { id: "lv", label: "Laravel", x: 400, y: 240, desc: "API Backend · Business Logic · Authentication" },
+  { id: "nd", label: "Node.js", x: 680, y: 210, desc: "WebSocket · Real-time · Messaging" },
+  { id: "my", label: "MySQL", x: 200, y: 330, desc: "Transactional Data · Users · Orders" },
+  { id: "rd", label: "Redis", x: 400, y: 315, desc: "Cache Layer · Queue · Session Store" },
+  { id: "mg", label: "MongoDB", x: 600, y: 330, desc: "Event Log · Analytics · Document Store" },
+  { id: "aw", label: "AWS", x: 400, y: 410, desc: "S3 Object Storage · EC2 Compute · RDS" },
 ];
 
-/* ─── Connection lines between infra nodes ────────────── */
 const INFRA_LINES = [
-  { from: "cloudflare", to: "nginx" },
-  { from: "nginx", to: "docker" },
-  { from: "docker", to: "laravel" },
-  { from: "docker", to: "nodejs" },
-  { from: "laravel", to: "mysql" },
-  { from: "laravel", to: "redis" },
-  { from: "nodejs", to: "mongo" },
-  { from: "nodejs", to: "redis" },
-  { from: "docker", to: "aws" },
+  ["cf","nx"],["nx","dk"],["dk","lv"],["dk","nd"],
+  ["lv","my"],["lv","rd"],["nd","mg"],["nd","rd"],["dk","aw"],
 ];
 
-/* ─── Deploy log lines ─────────────────────────────────── */
-const DEPLOY_LOG = [
-  { time: "9:41:02", msg: "[INFO]   git push origin main → commit a3f8c2d", color: "#888" },
-  { time: "9:41:04", msg: "[BUILD]  docker build -t app:latest .", color: "#f59e0b" },
-  { time: "9:41:18", msg: "[BUILD]  ✓ Image built successfully (14.2s)", color: "#10b981" },
-  { time: "9:41:19", msg: "[TEST]   Running 247 tests...", color: "#38bdf8" },
-  { time: "9:41:27", msg: "[TEST]   ✓ 247 passed | 0 failed | 0 skipped", color: "#10b981" },
-  { time: "9:41:28", msg: "[SCAN]   npm audit — 0 vulnerabilities", color: "#ef4444" },
-  { time: "9:41:29", msg: "[SCAN]   ✓ Security scan passed", color: "#10b981" },
-  { time: "9:41:30", msg: "[DEPLOY] docker push registry.example.com/app:latest", color: "#10b981" },
-  { time: "9:41:35", msg: "[DEPLOY] kubectl apply -f deployment.yaml", color: "#10b981" },
-  { time: "9:41:38", msg: "[DEPLOY] ✓ Deployed to production (namespace: prod)", color: "#10b981" },
-  { time: "9:41:39", msg: "[HEALTH] GET /health → 200 OK", color: "#10b981" },
-  { time: "9:41:40", msg: "[INFO]   ▲ All systems operational | Uptime: 99.97%", color: "#7c5cfc" },
-];
-
-/* ── Component ────────────────────────────────────────── */
+/* ─── Component ────────────────────────────────────────── */
 export default function DevOpsDashboard() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const pipelineRef = useRef<HTMLDivElement>(null);
-  const logRef = useRef<HTMLDivElement>(null);
-  const infraRef = useRef<SVGSVGElement>(null);
-  const [activePipeStage, setActivePipeStage] = useState(-1);
-  const [logLines, setLogLines] = useState(0);
+  const [activePipe, setActivePipe] = useState(-1);
+  const [logCount, setLogCount] = useState(0);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const hasAnimated = useRef(false);
+  const started = useRef(false);
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  /* ── Intersection Observer ── */
   useEffect(() => {
-    if (!containerRef.current || hasAnimated.current) return;
+    if (!containerRef.current || started.current) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting && !hasAnimated.current) {
-          hasAnimated.current = true;
-          startAnimations();
+        if (entries[0]?.isIntersecting && !started.current) {
+          started.current = true;
+          runAnimations();
         }
       },
       { threshold: 0.15 }
     );
 
     observer.observe(containerRef.current);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      timers.current.forEach(clearTimeout);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* ── All animations ── */
-  function startAnimations() {
-    // 1. Pipeline stage reveal + connection lines
-    const pipelineBalls = document.querySelectorAll(".pipe-stage");
+  function runAnimations() {
+    // Pipeline stages entrance
     anime({
-      targets: pipelineBalls,
+      targets: ".pipe-dot",
       scale: [0, 1],
       opacity: [0, 1],
       duration: 500,
@@ -104,40 +93,40 @@ export default function DevOpsDashboard() {
       easing: "easeOutBack",
     });
 
-    // Pipeline connecting lines draw
     anime({
-      targets: ".pipe-line",
+      targets: ".pipe-line-seg",
       strokeDashoffset: [anime.setDashoffset, 0],
       duration: 2000,
       delay: 500,
       easing: "easeInOutSine",
     });
 
-    // Pipeline stage cycling (endless)
-    let stageIdx = 0;
-    const stageInterval = setInterval(() => {
-      setActivePipeStage(stageIdx % PIPELINE_STAGES.length);
-      stageIdx++;
+    // Pipeline cycling
+    let idx = 0;
+    const t1 = setInterval(() => {
+      setActivePipe(idx % PIPELINE_STAGES.length);
+      idx++;
+      if (idx > PIPELINE_STAGES.length * 2) clearInterval(t1);
     }, 1200);
-    setTimeout(() => clearInterval(stageInterval), PIPELINE_STAGES.length * 1200);
 
-    // 2. SRE rings
+    // SRE rings
     anime({
-      targets: ".sre-ring",
+      targets: ".sre-fill",
       strokeDashoffset: (el: HTMLElement) => anime.setDashoffset(el) * 0.3,
       duration: 2000,
       delay: 800,
       easing: "easeInOutCubic",
     });
 
-    // 3. Deploy log typewriter (safe: count-based, uses static data)
-    DEPLOY_LOG.forEach((_, i) => {
-      setTimeout(() => setLogLines(i + 1), (i + 1) * 350);
+    // Deploy log typewriter (simple setTimeout chain, no array push)
+    DEPLOY_LOG_RAW.forEach((_, i) => {
+      const t = setTimeout(() => setLogCount(i + 1), (i + 1) * 350);
+      timers.current.push(t);
     });
 
-    // 4. Infrastructure diagram nodes + lines
+    // Infra nodes
     anime({
-      targets: ".infra-node",
+      targets: ".infra-node-g",
       scale: [0, 1],
       opacity: [0, 1],
       duration: 600,
@@ -146,46 +135,22 @@ export default function DevOpsDashboard() {
     });
 
     anime({
-      targets: ".infra-line",
+      targets: ".infra-line-path",
       strokeDashoffset: [anime.setDashoffset, 0],
       duration: 1800,
       delay: 2000,
       easing: "easeInOutSine",
     });
-
-    // Data flow particles on infra lines (continuous)
-    const particles = infraRef.current?.querySelectorAll(".infra-particle");
-    if (particles) {
-      particles.forEach((p, i) => {
-        anime({
-          targets: p,
-          opacity: [0, 0.8, 0],
-          duration: 2000 + i * 300,
-          delay: 2500 + i * 500,
-          loop: true,
-          easing: "linear",
-        });
-      });
-    }
   }
 
-  /* ── Auto scroll deploy log ── */
-  useEffect(() => {
-    if (logRef.current) {
-      logRef.current.scrollTop = logRef.current.scrollHeight;
-    }
-  }, [logLines]);
-
-  /* ── Render ── */
-  const nodePositions: Record<string, { x: number; y: number }> = {};
-  INFRA_NODES.forEach((n) => { nodePositions[n.id] = { x: n.x, y: n.y }; });
+  const nodePos: Record<string, { x: number; y: number }> = {};
+  INFRA_NODES.forEach((n) => { nodePos[n.id] = { x: n.x, y: n.y }; });
 
   return (
     <div
       ref={containerRef}
       className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden py-24 px-4"
     >
-      {/* Section label */}
       <div className="text-center mb-14">
         <p className="font-mono text-xs text-gray-600 tracking-[0.3em] mb-2">
           // INFRASTRUCTURE & OPERATIONS
@@ -200,24 +165,21 @@ export default function DevOpsDashboard() {
 
       <div className="w-full max-w-6xl space-y-12">
 
-        {/* ═══ ROW 1: Pipeline Visualizer + SRE Metrics ═══ */}
+        {/* ═══ ROW 1: Pipeline + SRE ═══ */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* ── Pipeline ── */}
+          {/* Pipeline */}
           <div className="bg-[#0a0a14] border border-[#1e1e2e] rounded-xl p-6">
             <p className="text-xs font-mono text-gray-600 mb-6 tracking-wider">CI/CD PIPELINE</p>
-
-            {/* Pipeline SVG */}
-            <div ref={pipelineRef} className="relative pb-16">
-              <svg className="w-full h-20" viewBox="0 0 500 80" preserveAspectRatio="none">
-                {/* Connecting lines */}
+            <div className="relative">
+              <svg className="w-full h-16" viewBox="0 0 500 60" preserveAspectRatio="none">
                 {PIPELINE_STAGES.slice(0, -1).map((_, i) => (
                   <line
                     key={i}
-                    className="pipe-line"
-                    x1={45 + i * 82}
-                    y1={40}
-                    x2={127 + i * 82}
-                    y2={40}
+                    className="pipe-line-seg"
+                    x1={50 + i * 80}
+                    y1={30}
+                    x2={130 + i * 80}
+                    y2={30}
                     stroke="#1e1e2e"
                     strokeWidth="2"
                     strokeDasharray="100"
@@ -225,29 +187,24 @@ export default function DevOpsDashboard() {
                   />
                 ))}
               </svg>
-
-              {/* Stage circles */}
-              <div className="absolute top-0 left-0 w-full flex justify-between px-[5%]">
-                {PIPELINE_STAGES.map((stage, i) => (
-                  <div key={stage.label} className="flex flex-col items-center gap-2">
+              <div className="absolute top-0 left-0 w-full flex justify-around">
+                {PIPELINE_STAGES.map((s, i) => (
+                  <div key={s.label} className="flex flex-col items-center gap-1">
                     <div
-                      className={`pipe-stage w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-lg border-2 transition-all duration-500 cursor-default ${
-                        i === activePipeStage ? "scale-125 shadow-lg" : ""
-                      }`}
+                      className="pipe-dot w-10 h-10 md:w-11 md:h-11 rounded-full border-2 transition-all duration-500"
                       style={{
-                        background: i === activePipeStage ? `${stage.color}15` : "transparent",
-                        borderColor: i === activePipeStage ? stage.color : "#1e1e2e",
-                        boxShadow: i === activePipeStage ? `0 0 20px ${stage.color}30` : "none",
                         opacity: 0,
+                        background: i === activePipe ? `${s.color}15` : "transparent",
+                        borderColor: i === activePipe ? s.color : "#1e1e2e",
+                        boxShadow: i === activePipe ? `0 0 18px ${s.color}25` : "none",
+                        transform: i === activePipe ? "scale(1.15)" : "scale(1)",
                       }}
-                    >
-                      <span className="text-xs">{stage.icon}</span>
-                    </div>
+                    />
                     <span
                       className="text-[9px] font-mono transition-colors duration-500"
-                      style={{ color: i === activePipeStage ? stage.color : "#555" }}
+                      style={{ color: i === activePipe ? s.color : "#444" }}
                     >
-                      {stage.label}
+                      {s.label}
                     </span>
                   </div>
                 ))}
@@ -255,39 +212,33 @@ export default function DevOpsDashboard() {
             </div>
           </div>
 
-          {/* ── SRE Metrics ── */}
+          {/* SRE */}
           <div className="bg-[#0a0a14] border border-[#1e1e2e] rounded-xl p-6">
             <p className="text-xs font-mono text-gray-600 mb-6 tracking-wider">SRE METRICS</p>
             <div className="flex items-center justify-around">
               {SRE_METRICS.map((m) => {
-                const circumference = 2 * Math.PI * 34;
-                const offset = circumference * (1 - m.value / m.max);
-                const statusColor = m.value < m.max * 0.3 ? "#10b981" : m.value < m.max * 0.6 ? "#f59e0b" : "#f97316";
-
+                const circ = 2 * Math.PI * 32;
+                const fillColor = m.value < m.max * 0.3 ? "#10b981" : m.value < m.max * 0.6 ? "#f59e0b" : "#f97316";
                 return (
-                  <div key={m.label} className="flex flex-col items-center gap-2">
-                    <svg width="90" height="90" viewBox="0 0 90 90">
-                      <circle cx="45" cy="45" r="34" fill="none" stroke="#1e1e2e" strokeWidth="4" />
-                      <circle
-                        className="sre-ring"
-                        cx="45"
-                        cy="45"
-                        r="34"
-                        fill="none"
-                        stroke={statusColor}
-                        strokeWidth="4"
-                        strokeLinecap="round"
-                        strokeDasharray={circumference}
-                        strokeDashoffset={circumference}
-                        transform="rotate(-90 45 45)"
-                      />
-                    </svg>
-                    <div className="absolute flex flex-col items-center" style={{ marginTop: 22 }}>
-                      <span className="text-lg font-bold font-mono" style={{ color: statusColor }}>{m.value}</span>
-                      <span className="text-[9px] font-mono text-gray-500">{m.unit}</span>
+                  <div key={m.label} className="flex flex-col items-center gap-1">
+                    <div className="relative">
+                      <svg width="84" height="84" viewBox="0 0 84 84">
+                        <circle cx="42" cy="42" r="32" fill="none" stroke="#1e1e2e" strokeWidth="4" />
+                        <circle
+                          className="sre-fill"
+                          cx="42" cy="42" r="32" fill="none"
+                          stroke={fillColor} strokeWidth="4" strokeLinecap="round"
+                          strokeDasharray={circ} strokeDashoffset={circ}
+                          transform="rotate(-90 42 42)"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-lg font-bold font-mono" style={{ color: fillColor }}>{m.value}</span>
+                        <span className="text-[9px] font-mono text-gray-500">{m.unit}</span>
+                      </div>
                     </div>
                     <span className="text-[10px] font-mono text-gray-400">{m.label}</span>
-                    <span className="text-[9px] font-mono text-gray-600 -mt-1">{m.desc}</span>
+                    <span className="text-[8px] font-mono text-gray-600">{m.desc}</span>
                   </div>
                 );
               })}
@@ -295,7 +246,7 @@ export default function DevOpsDashboard() {
           </div>
         </div>
 
-        {/* ═══ ROW 2: Deploy Log Terminal ═══ */}
+        {/* ═══ Deploy Log ═══ */}
         <div className="bg-[#0a0a14] border border-[#1e1e2e] rounded-xl overflow-hidden">
           <div className="flex items-center gap-2 px-4 py-2 bg-[#050510] border-b border-[#1e1e2e]">
             <span className="w-3 h-3 rounded-full bg-red-500/60" />
@@ -303,144 +254,82 @@ export default function DevOpsDashboard() {
             <span className="w-3 h-3 rounded-full bg-green-500/60" />
             <span className="ml-3 text-[10px] font-mono text-gray-600">deploy@prod:~$ tail -f /var/log/deploy.log</span>
           </div>
-          <div
-            ref={logRef}
-            className="p-4 h-48 overflow-y-auto font-mono text-xs leading-relaxed"
-          >
-            {logLines === 0 && (
-              <p className="text-gray-700 animate-pulse">Waiting for deployment…</p>
+          <div className="p-4 h-48 overflow-y-auto font-mono text-[11px] leading-relaxed">
+            {logCount === 0 && (
+              <span className="text-gray-700">Waiting for deployment…</span>
             )}
-            {DEPLOY_LOG.slice(0, logLines).map((line, i) => (
-              <div key={i} className="flex gap-3">
-                <span className="text-gray-700 flex-shrink-0">{line.time}</span>
-                <span style={{ color: line.color }}>{line.msg}</span>
-              </div>
-            ))}
+            {DEPLOY_LOG_RAW.slice(0, logCount).map((line, i) => {
+              const isError = line.includes("[SCAN]");
+              const isOk = line.includes("✓") || line.includes("200 OK");
+              const isInfo = line.includes("[INFO]");
+              const color = isError ? "#ef4444" : isOk ? "#10b981" : isInfo ? "#7c5cfc" : "#888";
+              return (
+                <div key={i} style={{ color }}>{line}</div>
+              );
+            })}
           </div>
         </div>
 
-        {/* ═══ ROW 3: Infrastructure Architecture Diagram ═══ */}
+        {/* ═══ Infra Diagram ═══ */}
         <div className="bg-[#0a0a14] border border-[#1e1e2e] rounded-xl p-6">
           <p className="text-xs font-mono text-gray-600 mb-6 tracking-wider">INFRASTRUCTURE ARCHITECTURE</p>
-          <div className="relative w-full" style={{ paddingBottom: "70%" }}>
-            <svg
-              ref={infraRef}
-              className="absolute inset-0 w-full h-full"
-              viewBox="0 0 100 72"
-              preserveAspectRatio="xMidYMid meet"
-            >
-              {/* Connection lines */}
-              {INFRA_LINES.map((line, i) => {
-                const from = nodePositions[line.from];
-                const to = nodePositions[line.to];
-                if (!from || !to) return null;
+          <div className="relative w-full" style={{ height: "520px" }}>
+            {/* SVG layer: connection lines only */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 800 520" preserveAspectRatio="none">
+              {INFRA_LINES.map(([a, b], i) => {
+                const f = nodePos[a];
+                const t = nodePos[b];
+                if (!f || !t) return null;
                 return (
                   <line
                     key={i}
-                    className="infra-line"
-                    x1={from.x}
-                    y1={from.y}
-                    x2={to.x}
-                    y2={to.y}
-                    stroke="#1e1e2e"
-                    strokeWidth="1.5"
-                    strokeDasharray="200"
-                    strokeDashoffset="200"
+                    className="infra-line-path"
+                    x1={f.x} y1={f.y} x2={t.x} y2={t.y}
+                    stroke="#1e1e2e" strokeWidth="2"
+                    strokeDasharray="300" strokeDashoffset="300"
                   />
                 );
               })}
-
-              {/* Data flow particles on lines */}
-              {INFRA_LINES.map((line, i) => {
-                const from = nodePositions[line.from];
-                const to = nodePositions[line.to];
-                if (!from || !to) return null;
-                const mx = (from.x + to.x) / 2;
-                const my = (from.y + to.y) / 2;
-                return (
-                  <circle
-                    key={`p-${i}`}
-                    className="infra-particle"
-                    cx={mx}
-                    cy={my}
-                    r="1.5"
-                    fill="#7c5cfc"
-                    opacity="0"
-                  />
-                );
-              })}
-
-              {/* Nodes */}
-              {INFRA_NODES.map((node) => (
-                <g
-                  key={node.id}
-                  className="infra-node"
-                  transform={`translate(${node.x}, ${node.y})`}
-                  onMouseEnter={() => setHoveredNode(node.id)}
-                  onMouseLeave={() => setHoveredNode(null)}
-                  style={{ cursor: "pointer", opacity: 0 }}
-                >
-                  {/* Glow ring */}
-                  <circle
-                    cx="0"
-                    cy="0"
-                    r={hoveredNode === node.id ? "10" : "7"}
-                    fill="none"
-                    stroke={hoveredNode === node.id ? "#7c5cfc" : "#1e1e2e"}
-                    strokeWidth="1"
-                    className="transition-all duration-300"
-                  />
-                  {/* Center circle */}
-                  <circle
-                    cx="0"
-                    cy="0"
-                    r="4"
-                    fill={hoveredNode === node.id ? "#7c5cfc" : "#0a0a14"}
-                    stroke={hoveredNode === node.id ? "#7c5cfc" : "#333"}
-                    strokeWidth="1.5"
-                    className="transition-all duration-300"
-                  />
-                  {/* Label */}
-                  <text
-                    x="0"
-                    y="14"
-                    textAnchor="middle"
-                    fill={hoveredNode === node.id ? "#c4b5fd" : "#666"}
-                    fontSize="3"
-                    fontFamily="monospace"
-                    className="transition-all duration-300"
-                  >
-                    {node.label}
-                  </text>
-
-                  {/* Tooltip on hover */}
-                  {hoveredNode === node.id && (
-                    <>
-                      <rect
-                        x="-22"
-                        y="-22"
-                        width="44"
-                        height="10"
-                        rx="2"
-                        fill="#0a0a14"
-                        stroke="#7c5cfc"
-                        strokeWidth="0.5"
-                      />
-                      <text
-                        x="0"
-                        y="-15"
-                        textAnchor="middle"
-                        fill="#a78bfa"
-                        fontSize="2.5"
-                        fontFamily="monospace"
-                      >
-                        {node.desc.length > 35 ? node.desc.slice(0, 35) + "…" : node.desc}
-                      </text>
-                    </>
-                  )}
-                </g>
-              ))}
             </svg>
+            {/* HTML layer: nodes (absolute positioned, proportional to SVG viewBox) */}
+            {INFRA_NODES.map((n) => (
+              <div
+                key={n.id}
+                className="infra-node-g absolute flex flex-col items-center"
+                style={{
+                  left: `${(n.x / 800) * 100}%`,
+                  top: `${(n.y / 520) * 100}%`,
+                  transform: "translate(-50%, -50%)",
+                  opacity: 0,
+                }}
+                onMouseEnter={() => setHoveredNode(n.id)}
+                onMouseLeave={() => setHoveredNode(null)}
+              >
+                <div
+                  className={`rounded-full border-2 transition-all duration-300 ${
+                    hoveredNode === n.id ? "scale-125" : ""
+                  }`}
+                  style={{
+                    width: hoveredNode === n.id ? "60px" : "44px",
+                    height: hoveredNode === n.id ? "60px" : "44px",
+                    borderColor: hoveredNode === n.id ? "#7c5cfc" : "#1e1e2e",
+                    background: hoveredNode === n.id ? "#7c5cfc30" : "transparent",
+                    boxShadow: hoveredNode === n.id ? "0 0 20px #7c5cfc30" : "none",
+                  }}
+                />
+                <span
+                  className="mt-2 text-[11px] md:text-xs font-mono font-bold transition-colors duration-300"
+                  style={{ color: hoveredNode === n.id ? "#c4b5fd" : "#666" }}
+                >
+                  {n.label}
+                </span>
+                {hoveredNode === n.id && (
+                  <span className="mt-1 text-[10px] font-mono text-purple-400 text-center leading-tight max-w-[160px]">
+                    {n.desc}
+                  </span>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 

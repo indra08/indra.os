@@ -291,7 +291,7 @@ export default function DataFlow() {
           stroke="url(#tlGradient)"
           strokeWidth="2"
           opacity="0"
-          transform-origin="400 400"
+          style={{ transformOrigin: "400px 400px" }}
         />
         <defs>
           <linearGradient id="tlGradient" x1="0" y1="0" x2="0" y2="1">
